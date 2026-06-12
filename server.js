@@ -9,7 +9,8 @@ app.use(express.json());
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const CLAUDE_API_KEY = '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';
-const BINANCE_WS = 'wss://stream.binance.com:9443/ws/xauusdtm@kline_1m'; // Binance Futures 1m candles
+const FINNHUB_API_KEY = 'd8lurc1r01qnkjl91p60d8lurc1r01qnkjl91p6g';
+const FINNHUB_WS = 'wss://ws.finnhub.io?token=' + FINNHUB_API_KEY;
 const MAX_CANDLES = 150;
 const PORT = process.env.PORT || 8080;
 
@@ -18,43 +19,68 @@ let candles = [];
 let ws = null;
 let reconnectAttempts = 0;
 const MAX_RECONNECT = 5;
+let currentCandle = null;
+let lastTickTime = 0;
 
-// ── BINANCE WEBSOCKET ─────────────────────────────────────────────────────────
-function connectBinance() {
-  console.log('Connecting to Binance WebSocket...');
+// ── FINNHUB WEBSOCKET ─────────────────────────────────────────────────────────
+function connectFinnhub() {
+  console.log('🔌 Connecting to Finnhub WebSocket...');
   
-  ws = new WebSocket(BINANCE_WS);
+  ws = new WebSocket(FINNHUB_WS);
   
   ws.on('open', () => {
-    console.log('✓ Connected to Binance WebSocket');
+    console.log('✓ Connected to Finnhub WebSocket');
+    // Subscribe to XAUUSD (Commodities)
+    ws.send(JSON.stringify({ type: 'subscribe', symbol: 'XAUUSD' }));
     reconnectAttempts = 0;
   });
 
   ws.on('message', (data) => {
     try {
       const msg = JSON.parse(data);
-      const k = msg.k; // kline object
       
-      // Only process closed candles
-      if (k.x === true) {
-        const candle = {
-          time: k.t, // milliseconds
-          open: parseFloat(k.o),
-          high: parseFloat(k.h),
-          low: parseFloat(k.l),
-          close: parseFloat(k.c),
-          volume: parseFloat(k.v)
-        };
-        
-        candles.push(candle);
-        if (candles.length > MAX_CANDLES) {
-          candles.shift();
-        }
-        
-        console.log(`[${new Date().toLocaleTimeString()}] XAU/USD: ${candle.close.toFixed(2)}`);
+      // Finnhub sends trade data with structure: { type: 'trade', data: [ { s, p, t, v }, ... ] }
+      if (msg.type === 'trade' && msg.data && Array.isArray(msg.data)) {
+        msg.data.forEach(trade => {
+          const price = trade.p; // price
+          const time = trade.t; // timestamp in milliseconds
+          
+          // Current minute bucket
+          const minuteBucket = Math.floor(time / 60000) * 60000;
+          
+          // Initialize new candle if needed
+          if (!currentCandle || Math.floor(currentCandle.time / 60000) !== Math.floor(minuteBucket / 60000)) {
+            // Save previous candle if exists
+            if (currentCandle) {
+              candles.push(currentCandle);
+              if (candles.length > MAX_CANDLES) {
+                candles.shift();
+              }
+              console.log(`✓ [${new Date(currentCandle.time).toLocaleTimeString()}] XAU/USD: ${currentCandle.close.toFixed(2)} | Open: ${currentCandle.open.toFixed(2)} | High: ${currentCandle.high.toFixed(2)} | Low: ${currentCandle.low.toFixed(2)}`);
+            }
+            
+            // Start new candle
+            currentCandle = {
+              time: minuteBucket,
+              open: price,
+              high: price,
+              low: price,
+              close: price,
+              volume: 1
+            };
+          } else {
+            // Update current candle
+            currentCandle.close = price;
+            currentCandle.high = Math.max(currentCandle.high, price);
+            currentCandle.low = Math.min(currentCandle.low, price);
+            currentCandle.volume += 1;
+          }
+          
+          lastTickTime = Date.now();
+        });
       }
     } catch (err) {
-      console.error('Error parsing Binance message:', err.message);
+      console.error('Error parsing Finnhub message:', err.message);
     }
   });
 
@@ -63,12 +89,12 @@ function connectBinance() {
   });
 
   ws.on('close', () => {
-    console.log('WebSocket closed. Attempting reconnect...');
+    console.log('⚠ WebSocket closed. Attempting reconnect...');
     if (reconnectAttempts < MAX_RECONNECT) {
       reconnectAttempts++;
-      setTimeout(connectBinance, 3000 * reconnectAttempts);
+      setTimeout(connectFinnhub, 3000 * reconnectAttempts);
     } else {
-      console.error('Max reconnect attempts reached.');
+      console.error('❌ Max reconnect attempts reached.');
     }
   });
 }
@@ -77,10 +103,26 @@ function connectBinance() {
 
 // GET /candles - Return latest candles
 app.get('/candles', (req, res) => {
-  if (candles.length === 0) {
-    return res.status(503).json({ error: 'No candle data yet. Waiting for Binance connection...' });
+  // Include current candle in response
+  const allCandles = [...candles];
+  if (currentCandle) {
+    allCandles.push(currentCandle);
   }
-  res.json({ candles, count: candles.length, timestamp: Date.now() });
+  
+  if (allCandles.length === 0) {
+    return res.status(503).json({ 
+      error: 'Waiting for Finnhub live data. May take 10-30 seconds.',
+      status: 'initializing',
+      candles: []
+    });
+  }
+  
+  res.json({ 
+    candles: allCandles, 
+    count: allCandles.length, 
+    timestamp: Date.now(),
+    lastTick: lastTickTime
+  });
 });
 
 // POST /signal - Proxy Claude API call
@@ -122,12 +164,18 @@ app.post('/signal', async (req, res) => {
 
 // GET /health - Health check
 app.get('/health', (req, res) => {
-  const status = ws && ws.readyState === WebSocket.OPEN ? 'connected' : 'disconnected';
+  const allCandles = [...candles];
+  if (currentCandle) {
+    allCandles.push(currentCandle);
+  }
+  
+  const status = allCandles.length > 0 ? 'live' : 'initializing';
   res.json({
     status: 'ok',
-    binance: status,
-    candles: candles.length,
-    latestPrice: candles.length > 0 ? candles[candles.length - 1].close : null,
+    finnhub: status,
+    candles: allCandles.length,
+    latestPrice: allCandles.length > 0 ? allCandles[allCandles.length - 1].close : null,
+    lastTick: lastTickTime,
     timestamp: Date.now()
   });
 });
@@ -135,22 +183,24 @@ app.get('/health', (req, res) => {
 // GET / - Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    service: 'AURUM SIGNAL Backend',
+    service: 'AURUM SIGNAL Backend (Finnhub WebSocket)',
     endpoints: {
       'GET /health': 'Health check',
-      'GET /candles': 'Get latest 150 candles from Binance',
+      'GET /candles': 'Get live candles from Finnhub',
       'POST /signal': 'Send prompt to Claude AI'
-    }
+    },
+    status: 'Connected to Finnhub for real-time XAUUSD'
   });
 });
 
 // ── SERVER ────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`\n╔══════════════════════════════════════╗`);
-  console.log(`║   AURUM SIGNAL Backend Server        ║`);
-  console.log(`║   Listening on port ${PORT}              ║`);
-  console.log(`╚══════════════════════════════════════╝\n`);
-  connectBinance();
+  console.log(`\n╔════════════════════════════════════════╗`);
+  console.log(`║   AURUM SIGNAL Backend (Finnhub)      ║`);
+  console.log(`║   Listening on port ${PORT}                ║`);
+  console.log(`║   Real-time XAUUSD WebSocket          ║`);
+  console.log(`╚════════════════════════════════════════╝\n`);
+  connectFinnhub();
 });
 
 process.on('SIGINT', () => {
