@@ -12,6 +12,9 @@ app.use(express.json({ limit: '1mb' }));
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 const GROQ_API_KEY    = process.env.GROQ_API_KEY;
 
+// ── Latest signal store (for MT5 polling) ─────────────────────────────────────
+let latestSignal = null;
+
 // ── Candle state ──────────────────────────────────────────────────────────────
 const BUFFER_SIZE = 200;
 let candles = [];
@@ -249,6 +252,8 @@ app.post('/signal', async (req, res) => {
     }
 
     const signal = JSON.parse(jsonMatch[0]);
+    signal.generated_at = new Date().toISOString();
+    latestSignal = signal; // store for MT5 polling
     console.log(`[Signal] ${signal.signal} ${signal.confidence}% | entry:${signal.entry} sl:${signal.sl} tp:${signal.tp}`);
     res.json(signal);
 
@@ -256,6 +261,12 @@ app.post('/signal', async (req, res) => {
     console.error('[Signal] Error:', e.message);
     res.status(500).json({ error: e.message });
   }
+});
+
+// ── Latest signal endpoint (MT5 polling) ─────────────────────────────────────
+app.get('/latest-signal', (req, res) => {
+  if (!latestSignal) return res.status(404).json({ error: 'No signal generated yet' });
+  res.json(latestSignal);
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────

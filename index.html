@@ -1268,6 +1268,7 @@ async function getSignal() {
 
     renderSignal(lastSignal);
     renderHistory();
+    pushNotification(lastSignal);
 
   } catch (e) {
     showSignalError(e.message);
@@ -1301,6 +1302,28 @@ function renderHistory() {
       <span class="h-reason">${s.primary_reason || ''}</span>
     </div>`;
   }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// BROWSER NOTIFICATIONS
+// ══════════════════════════════════════════════════════════════════════════════
+function requestNotificationPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}
+
+function pushNotification(signal) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const icon  = signal.signal === 'BUY' ? '▲' : signal.signal === 'SELL' ? '▼' : '◆';
+  const color = signal.signal === 'BUY' ? '🟢' : signal.signal === 'SELL' ? '🔴' : '🟡';
+  const n = new Notification(`${color} XAUUSD ${signal.signal} — ${signal.confidence}% confidence`, {
+    body: `Entry: $${signal.entry}  |  SL: $${signal.sl}  |  TP: $${signal.tp}  |  R:R 1:${signal.rr}\n${signal.primary_reason}`,
+    icon: 'https://pentasquad-bigbrain.github.io/aurum/favicon.ico',
+    tag:  'aurum-signal', // replaces previous notification so they don't stack
+    requireInteraction: signal.signal !== 'WAIT', // BUY/SELL stay until dismissed
+  });
+  n.onclick = () => { window.focus(); n.close(); };
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1354,6 +1377,7 @@ function init() {
   initChart();
   updateSession();
   setInterval(updateSession, 60000);
+  requestNotificationPermission();
 
   document.getElementById('signal-btn').addEventListener('click', getSignal);
   document.getElementById('auto-btn').addEventListener('click', toggleAuto);
