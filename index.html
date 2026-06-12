@@ -194,7 +194,7 @@ main{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
 </main>
 
 <script>
-const SERVER = window.location.hostname === 'localhost' ? 'http://localhost:8080' : window.location.origin;
+const SERVER = 'https://aurum-bqno.onrender.com';
 const MAX_C = 150, POLL_MS = 2000;
 let candles = [], autoMode = false, autoTimer = null;
 let chart, cs, ma20s, ma50s, ma200s, bbu, bbl, bbm, rc, rss, mc, mls, mss, mhs, ready = false;
@@ -261,4 +261,4 @@ function updateUI(){
   if(candles.length<5)return;
   const last=candles[candles.length-1],prev=candles[candles.length-2]||last,cl=candles.map(c=>c.close);
   const m20=ema(cl,20),m50=ema(cl,50),m200=ema(cl,200),rsA=calcRSI(cl,14),mcd=calcMACD(cl),bba=calcBB(cl,20),atrA=calcATR(candles,14),adxA=calcADX(candles,14);
-  const lR
+  const lR=rsA[rsA.length-1]||50,lM=mcd.hist[mcd.hist.length-1]||0,l
