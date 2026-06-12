@@ -14,16 +14,27 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
-// Preflight for all routes
 app.options('*', cors());
 
-// ── CONFIG ────────────────────────────────────────────────────────────────────
-const CLAUDE_API_KEY = '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';
-const FINNHUB_API_KEY = 'd8lurc1r01qnkjl91p60d8lurc1r01qnkjl91p6g';
+// ── CONFIG FROM ENVIRONMENT ──────────────────────────────────────────────────
+const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
+const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 const FINNHUB_WS = 'wss://ws.finnhub.io?token=' + FINNHUB_API_KEY;
 const MAX_CANDLES = 150;
 const PORT = process.env.PORT || 8080;
+
+// Validate environment variables
+if (!CLAUDE_API_KEY) {
+  console.error('[Error] CLAUDE_API_KEY environment variable not set');
+  process.exit(1);
+}
+if (!FINNHUB_API_KEY) {
+  console.error('[Error] FINNHUB_API_KEY environment variable not set');
+  process.exit(1);
+}
+
+console.log('[Config] CLAUDE_API_KEY loaded ✓');
+console.log('[Config] FINNHUB_API_KEY loaded ✓');
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let candles = [];
@@ -40,8 +51,9 @@ function connectFinnhub() {
   ws = new WebSocket(FINNHUB_WS);
   
   ws.on('open', () => {
-    console.log('[Finnhub] ✓ Connected');
+    console.log('[Finnhub] ✓ Connected to WebSocket');
     ws.send(JSON.stringify({ type: 'subscribe', symbol: 'XAUUSD' }));
+    console.log('[Finnhub] ✓ Subscribed to XAUUSD');
     reconnectAttempts = 0;
   });
 
@@ -59,7 +71,7 @@ function connectFinnhub() {
             if (currentCandle) {
               candles.push(currentCandle);
               if (candles.length > MAX_CANDLES) candles.shift();
-              console.log(`[Finnhub] Candle closed: ${currentCandle.close.toFixed(2)}`);
+              console.log(`[Finnhub] Candle: ${new Date(currentCandle.time).toLocaleTimeString()} | Close: ${currentCandle.close.toFixed(2)}`);
             }
             currentCandle = {
               time: minuteBucket,
@@ -88,10 +100,12 @@ function connectFinnhub() {
   });
 
   ws.on('close', () => {
-    console.log('[Finnhub] Closed. Reconnecting...');
+    console.log('[Finnhub] Closed. Reconnecting in 3 seconds...');
     if (reconnectAttempts < MAX_RECONNECT) {
       reconnectAttempts++;
       setTimeout(connectFinnhub, 3000 * reconnectAttempts);
+    } else {
+      console.error('[Finnhub] Max reconnection attempts reached');
     }
   });
 }
@@ -108,7 +122,7 @@ app.get('/candles', (req, res) => {
   
   if (allCandles.length === 0) {
     return res.status(503).json({ 
-      error: 'Waiting for Finnhub data',
+      error: 'Waiting for Finnhub data. May take 10-30 seconds.',
       status: 'initializing',
       candles: []
     });
@@ -127,8 +141,10 @@ app.post('/signal', async (req, res) => {
     const { model, max_tokens, messages } = req.body;
     
     if (!messages || !messages.length) {
-      return res.status(400).json({ error: 'No messages' });
+      return res.status(400).json({ error: 'No messages provided' });
     }
+
+    console.log('[Claude] Sending signal request...');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -148,11 +164,14 @@ app.post('/signal', async (req, res) => {
     res.header('Access-Control-Allow-Origin', '*');
     
     if (!response.ok) {
+      console.error('[Claude] API error:', data);
       return res.status(response.status).json(data);
     }
 
+    console.log('[Claude] ✓ Signal generated');
     res.json(data);
   } catch (err) {
+    console.error('[Claude] Error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -160,11 +179,13 @@ app.post('/signal', async (req, res) => {
 // GET /health
 app.get('/health', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
+  const total = candles.length + (currentCandle ? 1 : 0);
   res.json({
     status: 'ok',
     service: 'AURUM SIGNAL Backend',
-    candles: candles.length + (currentCandle ? 1 : 0),
-    finnhub: candles.length > 0 ? 'connected' : 'connecting',
+    candles: total,
+    finnhub: total > 0 ? 'connected' : 'connecting',
+    latestPrice: total > 0 ? candles[candles.length - 1]?.close : null,
     timestamp: Date.now()
   });
 });
@@ -172,18 +193,25 @@ app.get('/health', (req, res) => {
 // GET /
 app.get('/', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
-  res.json({ status: 'AURUM SIGNAL Backend Running' });
+  res.json({ 
+    status: 'ok',
+    service: 'AURUM SIGNAL Backend',
+    endpoints: ['/candles', '/signal', '/health']
+  });
 });
 
 // ── SERVER ────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`\n[Server] AURUM SIGNAL Backend`);
-  console.log(`[Server] Running on port ${PORT}`);
-  console.log(`[Server] CORS enabled for all origins\n`);
+  console.log(`\n╔════════════════════════════════════════╗`);
+  console.log(`║   AURUM SIGNAL Backend (Environment)   ║`);
+  console.log(`║   Port: ${PORT}                              ║`);
+  console.log(`║   CORS: Enabled for all origins        ║`);
+  console.log(`╚════════════════════════════════════════╝\n`);
   connectFinnhub();
 });
 
 process.on('SIGINT', () => {
+  console.log('\n[Server] Shutting down...');
   if (ws) ws.close();
   process.exit(0);
 });
