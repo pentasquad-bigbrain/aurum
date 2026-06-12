@@ -10,7 +10,7 @@ app.use(cors({ origin: '*' }));
 app.use(express.json({ limit: '1mb' }));
 
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
-const CLAUDE_API_KEY = process.env.CLAUDE_API_KEY;
+const GROQ_API_KEY    = process.env.GROQ_API_KEY;
 
 // ── Candle state ──────────────────────────────────────────────────────────────
 const BUFFER_SIZE = 200;
@@ -214,20 +214,20 @@ app.post('/signal', async (req, res) => {
   try {
     const { prompt } = req.body;
     if (!prompt) return res.status(400).json({ error: 'prompt is required' });
-    if (!CLAUDE_API_KEY) return res.status(500).json({ error: 'CLAUDE_API_KEY not configured' });
+    if (!GROQ_API_KEY) return res.status(500).json({ error: 'GROQ_API_KEY not configured' });
 
-    console.log('[Signal] Calling Claude API...');
+    console.log('[Signal] Calling Groq API (llama-3.3-70b)...');
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': CLAUDE_API_KEY,
-        'anthropic-version': '2023-06-01'
+        'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'llama-3.3-70b-versatile',
         max_tokens: 600,
+        temperature: 0.1,
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -235,17 +235,17 @@ app.post('/signal', async (req, res) => {
     const body = await response.text();
 
     if (!response.ok) {
-      console.error('[Signal] Claude API error:', body);
-      return res.status(response.status).json({ error: 'Claude API error', details: body });
+      console.error('[Signal] Groq API error:', body);
+      return res.status(response.status).json({ error: 'Groq API error', details: body });
     }
 
     const data = JSON.parse(body);
-    const text = data.content[0].text;
-    console.log('[Signal] Raw Claude response:', text.slice(0, 200));
+    const text = data.choices[0].message.content;
+    console.log('[Signal] Raw Groq response:', text.slice(0, 200));
 
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      return res.status(500).json({ error: 'No JSON in Claude response', raw: text });
+      return res.status(500).json({ error: 'No JSON in Groq response', raw: text });
     }
 
     const signal = JSON.parse(jsonMatch[0]);
@@ -267,8 +267,8 @@ app.listen(PORT, () => {
   if (!FINNHUB_API_KEY) {
     console.error('[Server] WARNING: FINNHUB_API_KEY not set');
   }
-  if (!CLAUDE_API_KEY) {
-    console.error('[Server] WARNING: CLAUDE_API_KEY not set');
+  if (!GROQ_API_KEY) {
+    console.error('[Server] WARNING: GROQ_API_KEY not set');
   }
 
   // Load history first, then open WebSocket for live ticks
