@@ -55,43 +55,69 @@ function processTick(price, timestamp, volume) {
   }
 }
 
-// ── Historical candle fetch (REST) ────────────────────────────────────────────
+// ── Historical candle fetch ───────────────────────────────────────────────────
 async function fetchHistoricalCandles() {
-  if (!FINNHUB_API_KEY) return;
+  // 1) Try Finnhub REST (works on premium plans with 1m resolution)
+  if (FINNHUB_API_KEY) {
+    try {
+      const to   = Math.floor(Date.now() / 1000);
+      const from = to - 60 * 210;
+      const url  = `https://finnhub.io/api/v1/forex/candle?symbol=OANDA:XAU_USD&resolution=1&from=${from}&to=${to}&token=${FINNHUB_API_KEY}`;
+      const r    = await fetch(url);
+      const data = await r.json();
 
-  const to   = Math.floor(Date.now() / 1000);
-  const from = to - 60 * 200; // last 200 minutes
+      if (data.s === 'ok' && Array.isArray(data.t) && data.t.length > 10) {
+        const historical = data.t.map((t, i) => ({
+          time: t, open: data.o[i], high: data.h[i],
+          low: data.l[i], close: data.c[i], volume: data.v[i] || 0,
+        }));
+        historical.sort((a, b) => a.time - b.time);
+        candles   = historical.slice(-BUFFER_SIZE);
+        lastPrice = candles[candles.length - 1].close;
+        console.log(`[History] Finnhub: ${candles.length} candles loaded. Last: $${lastPrice.toFixed(2)}`);
+        return;
+      }
+      console.log(`[History] Finnhub returned "${data.s}" (free tier likely). Trying Yahoo Finance...`);
+    } catch (e) {
+      console.warn('[History] Finnhub REST error:', e.message);
+    }
+  }
 
-  const url = `https://finnhub.io/api/v1/forex/candle?symbol=OANDA:XAU_USD&resolution=1&from=${from}&to=${to}&token=${FINNHUB_API_KEY}`;
-
-  console.log('[History] Fetching historical candles...');
+  // 2) Fallback: Yahoo Finance 1-minute gold futures (GC=F) — free, no key needed
   try {
-    const r    = await fetch(url);
+    console.log('[History] Fetching from Yahoo Finance (GC=F 1m)...');
+    const url = 'https://query1.finance.yahoo.com/v8/finance/chart/GC=F?range=2d&interval=1m&includePrePost=false';
+    const r   = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' }
+    });
     const data = await r.json();
 
-    if (data.s !== 'ok' || !Array.isArray(data.t)) {
-      console.warn('[History] No historical data returned:', data.s);
+    const result = data?.chart?.result?.[0];
+    if (!result?.timestamp) {
+      console.warn('[History] Yahoo Finance: no data in response');
       return;
     }
 
-    // Build candle array from Finnhub response arrays
-    const historical = data.t.map((t, i) => ({
-      time:   t,
-      open:   data.o[i],
-      high:   data.h[i],
-      low:    data.l[i],
-      close:  data.c[i],
-      volume: data.v[i] || 0,
-    }));
+    const { timestamp, indicators } = result;
+    const q = indicators.quote[0];
 
-    // Sort ascending and keep most recent BUFFER_SIZE candles
+    const historical = timestamp
+      .map((t, i) => ({
+        time:   t,
+        open:   q.open[i],
+        high:   q.high[i],
+        low:    q.low[i],
+        close:  q.close[i],
+        volume: q.volume[i] || 0,
+      }))
+      .filter(c => c.close != null && c.open != null);
+
     historical.sort((a, b) => a.time - b.time);
-    candles = historical.slice(-BUFFER_SIZE);
+    candles   = historical.slice(-BUFFER_SIZE);
     lastPrice = candles[candles.length - 1].close;
-
-    console.log(`[History] Loaded ${candles.length} historical candles. Last close: $${lastPrice.toFixed(2)}`);
+    console.log(`[History] Yahoo Finance: ${candles.length} candles loaded. Last: $${lastPrice.toFixed(2)}`);
   } catch (e) {
-    console.error('[History] Failed to fetch historical candles:', e.message);
+    console.error('[History] Yahoo Finance failed:', e.message);
   }
 }
 
