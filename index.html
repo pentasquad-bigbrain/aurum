@@ -598,6 +598,167 @@ html, body {
   height: 16px;
   margin-top: 4px;
 }
+
+/* ── Tab bar ─────────────────────────────────────────────────── */
+#tab-bar {
+  display: flex;
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.tab-btn {
+  padding: 8px 24px;
+  font-family: var(--font-m);
+  font-size: 10px;
+  letter-spacing: 2.5px;
+  color: var(--text-3);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab-btn:hover { color: var(--text-2); }
+.tab-btn.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+/* ── Tab content visibility ──────────────────────────────────── */
+.tab-pane { display: none; }
+.tab-pane.active { display: contents; }
+#dashboard-view { display: none; flex: 1; flex-direction: column; overflow-y: auto; }
+#dashboard-view.active { display: flex; }
+
+/* ── Dashboard layout ────────────────────────────────────────── */
+.dash-body { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  text-align: center;
+}
+.stat-val {
+  font-family: var(--font-m);
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--text-1);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-val.bull { color: var(--green); }
+.stat-val.bear { color: var(--red); }
+.stat-val.gold { color: var(--gold); }
+.stat-label { font-size: 9px; letter-spacing: 2px; color: var(--text-3); }
+
+/* ── Learning card ───────────────────────────────────────────── */
+.learning-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.learning-icon { font-size: 20px; flex-shrink: 0; }
+.learning-text h4 {
+  font-family: var(--font-d);
+  font-size: 15px;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+.learning-text p { font-size: 11px; color: var(--text-2); line-height: 1.6; }
+
+/* ── Dashboard signal table ──────────────────────────────────── */
+.dash-section-title {
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  color: var(--text-3);
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.clear-btn {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--red);
+  background: none;
+  border: 1px solid rgba(255,74,110,0.2);
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.clear-btn:hover { background: rgba(255,74,110,0.08); }
+
+.sig-table { width: 100%; border-collapse: collapse; }
+.sig-table th {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--text-3);
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.sig-table td {
+  font-size: 11px;
+  color: var(--text-2);
+  padding: 8px 8px;
+  border-bottom: 1px solid var(--border-dim);
+  vertical-align: middle;
+}
+.sig-table tr:hover td { background: rgba(255,255,255,0.02); }
+.sig-table tr.win-row td { background: rgba(0,200,150,0.04); }
+.sig-table tr.loss-row td { background: rgba(255,74,110,0.04); }
+
+.outcome-btns { display: flex; gap: 4px; }
+.oc-btn {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-m);
+}
+.oc-btn:hover { border-color: var(--text-2); color: var(--text-1); }
+.oc-btn.win.active   { background: rgba(0,200,150,0.15); border-color: var(--green); color: var(--green); }
+.oc-btn.loss.active  { background: rgba(255,74,110,0.15); border-color: var(--red);   color: var(--red); }
+.oc-btn.skip.active  { background: rgba(100,100,100,0.15); border-color: var(--text-3); color: var(--text-2); }
+
+/* ── Session breakdown ───────────────────────────────────────── */
+.session-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.session-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  text-align: center;
+}
+.session-name { font-size: 9px; letter-spacing: 1.5px; color: var(--text-3); margin-bottom: 6px; }
+.session-wr   { font-size: 18px; font-weight: 500; color: var(--text-1); }
+.session-count{ font-size: 10px; color: var(--text-3); margin-top: 2px; }
+
+@media (max-width: 800px) {
+  .stats-row    { grid-template-columns: repeat(2, 1fr); }
+  .session-grid { grid-template-columns: repeat(2, 1fr); }
+  .sig-table th:nth-child(4),
+  .sig-table td:nth-child(4) { display: none; }
+}
 </style>
 </head>
 <body>
@@ -631,6 +792,12 @@ html, body {
       <div id="session-badge">—</div>
     </div>
   </header>
+
+  <!-- Tab bar -->
+  <div id="tab-bar">
+    <button class="tab-btn active" id="tab-chart-btn" onclick="switchTab('chart')">CHART</button>
+    <button class="tab-btn" id="tab-dash-btn" onclick="switchTab('dashboard')">DASHBOARD</button>
+  </div>
 
   <!-- Main -->
   <div id="main">
@@ -749,6 +916,83 @@ html, body {
 
     </div><!-- /right-panel -->
   </div><!-- /main -->
+
+  <!-- Dashboard View -->
+  <div id="dashboard-view">
+    <div class="dash-body">
+
+      <!-- Stats -->
+      <div>
+        <div class="dash-section-title"><span>PERFORMANCE OVERVIEW</span></div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-val gold" id="d-total">0</div>
+            <div class="stat-label">TOTAL SIGNALS</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="d-winrate">—</div>
+            <div class="stat-label">WIN RATE</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="d-wins">0 / 0</div>
+            <div class="stat-label">WINS / LOSSES</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val gold" id="d-avgconf">—</div>
+            <div class="stat-label">AVG CONFIDENCE</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Learning status -->
+      <div class="learning-card" id="learning-card">
+        <div class="learning-icon">🧠</div>
+        <div class="learning-text">
+          <h4>AI Learning Status</h4>
+          <p id="learning-text">Rate your signals below (WIN / LOSS) — the AI will study your outcomes and adjust its strategy on every future signal.</p>
+        </div>
+      </div>
+
+      <!-- Session breakdown -->
+      <div>
+        <div class="dash-section-title"><span>PERFORMANCE BY SESSION</span></div>
+        <div class="session-grid">
+          <div class="session-card"><div class="session-name">ASIA</div><div class="session-wr" id="sess-asia">—</div><div class="session-count" id="sess-asia-n">0 signals</div></div>
+          <div class="session-card"><div class="session-name">LONDON</div><div class="session-wr" id="sess-london">—</div><div class="session-count" id="sess-london-n">0 signals</div></div>
+          <div class="session-card"><div class="session-name">NY OPEN</div><div class="session-wr" id="sess-ny">—</div><div class="session-count" id="sess-ny-n">0 signals</div></div>
+          <div class="session-card"><div class="session-name">ALL DAY</div><div class="session-wr" id="sess-all">—</div><div class="session-count" id="sess-all-n">0 signals</div></div>
+        </div>
+      </div>
+
+      <!-- Signal log -->
+      <div style="flex:1">
+        <div class="dash-section-title">
+          <span>SIGNAL LOG — click WIN / LOSS to teach the AI</span>
+          <button class="clear-btn" onclick="clearHistory()">CLEAR ALL</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="sig-table">
+            <thead>
+              <tr>
+                <th>TIME</th>
+                <th>SIGNAL</th>
+                <th>CONF</th>
+                <th>ENTRY</th>
+                <th>SL</th>
+                <th>TP</th>
+                <th>R:R</th>
+                <th>SESSION</th>
+                <th>OUTCOME</th>
+              </tr>
+            </thead>
+            <tbody id="dash-signal-tbody"></tbody>
+          </table>
+        </div>
+        <div id="dash-empty" style="text-align:center;padding:40px;color:var(--text-3);font-size:12px">No signals yet — press GET SIGNAL or enable AUTO mode</div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- Signal History -->
   <div id="history-section">
@@ -1157,7 +1401,7 @@ function buildPrompt() {
     ? `ADX:${adx.adx.toFixed(1)} +DI:${adx.plusDI.toFixed(1)} -DI:${adx.minusDI.toFixed(1)}`
     : 'ADX:N/A';
 
-  return `You are an elite XAUUSD (Gold/USD) trader. Analyse this real-time market snapshot and give a precise trading signal.
+  return `You are an elite XAUUSD (Gold/USD) trader. Analyse this real-time market snapshot and give a precise trading signal.${buildLearningContext()}
 
 SNAPSHOT (${new Date().toISOString()}):
 Price: $${price ? price.toFixed(2) : 'N/A'} | Session: ${getSession()} | Candles: ${candles.length}
@@ -1262,12 +1506,13 @@ async function getSignal() {
     }
 
     const sig = await r.json();
-    lastSignal = { ...sig, timestamp: new Date() };
+    lastSignal = { ...sig, timestamp: new Date(), session: getSession() };
     signalHistory.unshift(lastSignal);
     if (signalHistory.length > 30) signalHistory.pop();
 
     renderSignal(lastSignal);
     renderHistory();
+    saveHistory();
     pushNotification(lastSignal);
 
   } catch (e) {
@@ -1374,6 +1619,7 @@ function toggleAuto() {
 // INIT
 // ══════════════════════════════════════════════════════════════════════════════
 function init() {
+  loadHistory();
   initChart();
   updateSession();
   setInterval(updateSession, 60000);
@@ -1395,6 +1641,167 @@ function init() {
       setTimeout(() => overlay.classList.add('hidden'), 3000);
     }
   }, 8000);
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════════════════════════════════════════
+function switchTab(tab) {
+  const isChart = tab === 'chart';
+  document.getElementById('tab-chart-btn').classList.toggle('active', isChart);
+  document.getElementById('tab-dash-btn').classList.toggle('active', !isChart);
+  document.getElementById('main').style.display           = isChart ? '' : 'none';
+  document.getElementById('history-section').style.display = isChart ? '' : 'none';
+  const dv = document.getElementById('dashboard-view');
+  dv.classList.toggle('active', !isChart);
+  if (!isChart) updateDashboard();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LOCALSTORAGE PERSISTENCE
+// ══════════════════════════════════════════════════════════════════════════════
+const LS_KEY = 'aurum_signal_history_v2';
+
+function saveHistory() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(signalHistory)); } catch(e) {}
+}
+
+function loadHistory() {
+  try {
+    const d = localStorage.getItem(LS_KEY);
+    if (d) signalHistory = JSON.parse(d);
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// OUTCOME MARKING (learning data)
+// ══════════════════════════════════════════════════════════════════════════════
+function markOutcome(idx, outcome) {
+  if (!signalHistory[idx]) return;
+  signalHistory[idx].outcome = outcome;
+  saveHistory();
+  updateDashboard();
+  renderHistory();
+}
+
+function clearHistory() {
+  if (!confirm('Clear all signal history? This also resets AI learning data.')) return;
+  signalHistory = [];
+  saveHistory();
+  updateDashboard();
+  renderHistory();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DASHBOARD UPDATE
+// ══════════════════════════════════════════════════════════════════════════════
+function updateDashboard() {
+  const total  = signalHistory.length;
+  const rated  = signalHistory.filter(s => s.outcome && s.outcome !== 'skip');
+  const wins   = rated.filter(s => s.outcome === 'win');
+  const losses = rated.filter(s => s.outcome === 'loss');
+  const wr     = rated.length ? Math.round(wins.length / rated.length * 100) : null;
+  const avgConf = total ? Math.round(signalHistory.reduce((a,s) => a + (s.confidence||0), 0) / total) : null;
+
+  document.getElementById('d-total').textContent   = total;
+  document.getElementById('d-winrate').textContent = wr !== null ? wr + '%' : '—';
+  document.getElementById('d-winrate').className   = 'stat-val ' + (wr >= 60 ? 'bull' : wr < 50 ? 'bear' : '');
+  document.getElementById('d-wins').textContent    = `${wins.length} / ${losses.length}`;
+  document.getElementById('d-avgconf').textContent = avgConf !== null ? avgConf + '%' : '—';
+
+  // Session breakdown
+  const sessions = { 'ASIA': [], 'LONDON': [], 'NY OPEN': [], 'total': [] };
+  signalHistory.forEach(s => {
+    const sess = s.session || 'LONDON';
+    if (!sessions[sess]) sessions[sess] = [];
+    sessions[sess].push(s);
+    sessions['total'].push(s);
+  });
+  function sessWR(arr) {
+    const r = arr.filter(s => s.outcome && s.outcome !== 'skip');
+    if (!r.length) return '—';
+    return Math.round(r.filter(s => s.outcome === 'win').length / r.length * 100) + '%';
+  }
+  document.getElementById('sess-asia').textContent     = sessWR(sessions['ASIA'] || []);
+  document.getElementById('sess-asia-n').textContent   = (sessions['ASIA']||[]).length + ' signals';
+  document.getElementById('sess-london').textContent   = sessWR(sessions['LONDON'] || []);
+  document.getElementById('sess-london-n').textContent = (sessions['LONDON']||[]).length + ' signals';
+  document.getElementById('sess-ny').textContent       = sessWR(sessions['NY OPEN'] || []);
+  document.getElementById('sess-ny-n').textContent     = (sessions['NY OPEN']||[]).length + ' signals';
+  document.getElementById('sess-all').textContent      = sessWR(sessions['total']);
+  document.getElementById('sess-all-n').textContent    = total + ' signals';
+
+  // Learning status text
+  const learnTxt = document.getElementById('learning-text');
+  if (rated.length < 3) {
+    learnTxt.textContent = `Rate ${3 - rated.length} more signal${3-rated.length===1?'':'s'} (WIN/LOSS) to activate AI learning. The AI will study your outcomes and refine its strategy.`;
+  } else {
+    const recentLosses = losses.slice(0, 3).map(s => `${s.signal} ${s.confidence}%`).join(', ');
+    learnTxt.textContent = `Learning from ${rated.length} rated signals (${wr}% win rate). The AI is incorporating this performance data into every new signal. ${losses.length > 0 ? 'Avoiding patterns similar to recent losses: ' + recentLosses + '.' : 'All rated signals were winners — keep going!'}`;
+  }
+
+  // Render signal table
+  const tbody = document.getElementById('dash-signal-tbody');
+  const empty = document.getElementById('dash-empty');
+  if (!signalHistory.length) {
+    tbody.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  tbody.innerHTML = signalHistory.map((s, i) => {
+    const cls  = s.signal === 'BUY' ? 'bull' : s.signal === 'SELL' ? 'bear' : 'neutral';
+    const icon = s.signal === 'BUY' ? '▲' : s.signal === 'SELL' ? '▼' : '●';
+    const time = s.timestamp ? new Date(s.timestamp).toLocaleTimeString() : '—';
+    const rowCls = s.outcome === 'win' ? 'win-row' : s.outcome === 'loss' ? 'loss-row' : '';
+    return `<tr class="${rowCls}">
+      <td style="color:var(--text-3)">${time}</td>
+      <td><span style="color:var(--${s.signal==='BUY'?'green':s.signal==='SELL'?'red':'text-2'})">${icon} ${s.signal}</span></td>
+      <td style="color:var(--gold)">${s.confidence}%</td>
+      <td class="mono">${s.entry || '—'}</td>
+      <td class="mono" style="color:var(--red)">${s.sl || '—'}</td>
+      <td class="mono" style="color:var(--green)">${s.tp || '—'}</td>
+      <td style="color:var(--gold)">1:${s.rr || '—'}</td>
+      <td style="color:var(--text-3)">${s.session || '—'}</td>
+      <td><div class="outcome-btns">
+        <button class="oc-btn win  ${s.outcome==='win' ?'active':''}" onclick="markOutcome(${i},'win')">WIN</button>
+        <button class="oc-btn loss ${s.outcome==='loss'?'active':''}" onclick="markOutcome(${i},'loss')">LOSS</button>
+        <button class="oc-btn skip ${s.outcome==='skip'?'active':''}" onclick="markOutcome(${i},'skip')">—</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LEARNING PROMPT CONTEXT
+// ══════════════════════════════════════════════════════════════════════════════
+function buildLearningContext() {
+  const rated = signalHistory.filter(s => s.outcome && s.outcome !== 'skip');
+  if (rated.length < 3) return '';
+
+  const wins   = rated.filter(s => s.outcome === 'win');
+  const losses = rated.filter(s => s.outcome === 'loss');
+  const wr     = Math.round(wins.length / rated.length * 100);
+
+  let ctx = `\nYOUR HISTORICAL PERFORMANCE (${rated.length} rated signals):
+Win rate: ${wr}% | Wins: ${wins.length} | Losses: ${losses.length}`;
+
+  if (losses.length > 0) {
+    const lossDesc = losses.slice(0, 4).map(s =>
+      `${s.signal}@${s.entry} conf:${s.confidence}%`
+    ).join(', ');
+    ctx += `\nRecent LOSING signals: ${lossDesc}`;
+    ctx += `\nStudy these losses. Raise your bar — only signal when conditions are clearly better than your past failures.`;
+  }
+  if (wins.length > 0) {
+    const winDesc = wins.slice(0, 3).map(s =>
+      `${s.signal}@${s.entry} conf:${s.confidence}%`
+    ).join(', ');
+    ctx += `\nRecent WINNING signals: ${winDesc}`;
+    ctx += `\nReplicate these winning conditions when you see them.`;
+  }
+  ctx += `\nAdjust confidence score to reflect this track record honestly.\n`;
+  return ctx;
 }
 
 document.addEventListener('DOMContentLoaded', init);
