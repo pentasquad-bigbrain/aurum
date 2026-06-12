@@ -55,6 +55,72 @@ function processTick(price, timestamp, volume) {
   }
 }
 
+// ── Historical candle fetch ───────────────────────────────────────────────────
+async function fetchHistoricalCandles() {
+  // 1) Try Finnhub REST (works on premium plans with 1m resolution)
+  if (FINNHUB_API_KEY) {
+    try {
+      const to   = Math.floor(Date.now() / 1000);
+      const from = to - 60 * 210;
+      const url  = `https://finnhub.io/api/v1/forex/candle?symbol=OANDA:XAU_USD&resolution=1&from=${from}&to=${to}&token=${FINNHUB_API_KEY}`;
+      const r    = await fetch(url);
+      const data = await r.json();
+
+      if (data.s === 'ok' && Array.isArray(data.t) && data.t.length > 10) {
+        const historical = data.t.map((t, i) => ({
+          time: t, open: data.o[i], high: data.h[i],
+          low: data.l[i], close: data.c[i], volume: data.v[i] || 0,
+        }));
+        historical.sort((a, b) => a.time - b.time);
+        candles   = historical.slice(-BUFFER_SIZE);
+        lastPrice = candles[candles.length - 1].close;
+        console.log(`[History] Finnhub: ${candles.length} candles loaded. Last: $${lastPrice.toFixed(2)}`);
+        return;
+      }
+      console.log(`[History] Finnhub returned "${data.s}" (free tier likely). Trying Yahoo Finance...`);
+    } catch (e) {
+      console.warn('[History] Finnhub REST error:', e.message);
+    }
+  }
+
+  // 2) Fallback: Yahoo Finance 1-minute gold futures (GC=F) — free, no key needed
+  try {
+    console.log('[History] Fetching from Yahoo Finance (GC=F 1m)...');
+    const url = 'https://query1.finance.yahoo.com/v8/finance/chart/GC=F?range=2d&interval=1m&includePrePost=false';
+    const r   = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' }
+    });
+    const data = await r.json();
+
+    const result = data?.chart?.result?.[0];
+    if (!result?.timestamp) {
+      console.warn('[History] Yahoo Finance: no data in response');
+      return;
+    }
+
+    const { timestamp, indicators } = result;
+    const q = indicators.quote[0];
+
+    const historical = timestamp
+      .map((t, i) => ({
+        time:   t,
+        open:   q.open[i],
+        high:   q.high[i],
+        low:    q.low[i],
+        close:  q.close[i],
+        volume: q.volume[i] || 0,
+      }))
+      .filter(c => c.close != null && c.open != null);
+
+    historical.sort((a, b) => a.time - b.time);
+    candles   = historical.slice(-BUFFER_SIZE);
+    lastPrice = candles[candles.length - 1].close;
+    console.log(`[History] Yahoo Finance: ${candles.length} candles loaded. Last: $${lastPrice.toFixed(2)}`);
+  } catch (e) {
+    console.error('[History] Yahoo Finance failed:', e.message);
+  }
+}
+
 // ── Finnhub WebSocket ─────────────────────────────────────────────────────────
 let ws = null;
 let reconnectTimer = null;
@@ -205,5 +271,6 @@ app.listen(PORT, () => {
     console.error('[Server] WARNING: CLAUDE_API_KEY not set');
   }
 
-  connectFinnhub();
+  // Load history first, then open WebSocket for live ticks
+  fetchHistoricalCandles().then(() => connectFinnhub());
 });
