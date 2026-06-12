@@ -55,6 +55,46 @@ function processTick(price, timestamp, volume) {
   }
 }
 
+// ── Historical candle fetch (REST) ────────────────────────────────────────────
+async function fetchHistoricalCandles() {
+  if (!FINNHUB_API_KEY) return;
+
+  const to   = Math.floor(Date.now() / 1000);
+  const from = to - 60 * 200; // last 200 minutes
+
+  const url = `https://finnhub.io/api/v1/forex/candle?symbol=OANDA:XAU_USD&resolution=1&from=${from}&to=${to}&token=${FINNHUB_API_KEY}`;
+
+  console.log('[History] Fetching historical candles...');
+  try {
+    const r    = await fetch(url);
+    const data = await r.json();
+
+    if (data.s !== 'ok' || !Array.isArray(data.t)) {
+      console.warn('[History] No historical data returned:', data.s);
+      return;
+    }
+
+    // Build candle array from Finnhub response arrays
+    const historical = data.t.map((t, i) => ({
+      time:   t,
+      open:   data.o[i],
+      high:   data.h[i],
+      low:    data.l[i],
+      close:  data.c[i],
+      volume: data.v[i] || 0,
+    }));
+
+    // Sort ascending and keep most recent BUFFER_SIZE candles
+    historical.sort((a, b) => a.time - b.time);
+    candles = historical.slice(-BUFFER_SIZE);
+    lastPrice = candles[candles.length - 1].close;
+
+    console.log(`[History] Loaded ${candles.length} historical candles. Last close: $${lastPrice.toFixed(2)}`);
+  } catch (e) {
+    console.error('[History] Failed to fetch historical candles:', e.message);
+  }
+}
+
 // ── Finnhub WebSocket ─────────────────────────────────────────────────────────
 let ws = null;
 let reconnectTimer = null;
@@ -205,5 +245,6 @@ app.listen(PORT, () => {
     console.error('[Server] WARNING: CLAUDE_API_KEY not set');
   }
 
-  connectFinnhub();
+  // Load history first, then open WebSocket for live ticks
+  fetchHistoricalCandles().then(() => connectFinnhub());
 });
