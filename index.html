@@ -11,12 +11,10 @@ body{background:#0a0c0f;color:#e8e0d0;font-family:'JetBrains Mono',monospace;min
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#1e2430;border-radius:2px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-
 #splash{position:fixed;inset:0;background:#0a0c0f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999}
 #splash h1{font-family:'Cormorant Garamond',serif;font-size:32px;color:#C9A84C;letter-spacing:6px}
 .spin{width:28px;height:28px;border:2px solid #1e2430;border-top-color:#C9A84C;border-radius:50%;animation:spin .8s linear infinite}
 #splash-msg{font-size:10px;color:#6b7280;letter-spacing:3px;animation:pulse 1.5s infinite;text-align:center;padding:0 20px}
-
 header{padding:10px 14px;border-bottom:1px solid #1e2430;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#0a0c0f;z-index:50}
 .logo{font-family:'Cormorant Garamond',serif;font-size:18px;color:#C9A84C;letter-spacing:3px}
 .sub{font-size:7px;color:#6b7280;letter-spacing:2px}
@@ -27,7 +25,6 @@ header{padding:10px 14px;border-bottom:1px solid #1e2430;display:flex;justify-co
 #live-price{font-size:24px;font-weight:700;color:#22c55e}
 #live-change{font-size:10px;margin-top:1px}
 #live-dot{font-size:8px;margin-top:1px;color:#22c55e}
-
 main{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
 .chart-box{background:#111318;border:1px solid #1e2430;border-radius:8px;padding:8px}
 .cleg{display:flex;gap:10px;font-size:7px;color:#6b7280;margin-bottom:5px}
@@ -35,7 +32,6 @@ main{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
 .slabel{font-size:7px;color:#6b7280;padding:3px 0 2px}
 #c-rsi{width:100%;height:60px}
 #c-macd{width:100%;height:60px}
-
 .ind-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
 .icard{background:#181c22;border:1px solid #1e2430;border-radius:6px;padding:8px 10px;position:relative;cursor:help}
 .ilbl{font-size:6px;color:#6b7280;letter-spacing:2px;margin-bottom:2px}
@@ -43,23 +39,19 @@ main{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
 .isub{font-size:8px;color:#6b7280;margin-top:1px}
 .itip{display:none;position:absolute;bottom:105%;left:0;background:#181c22;border:1px solid #C9A84C44;border-radius:5px;padding:7px 10px;font-size:10px;color:#e8e0d0;width:180px;z-index:100;line-height:1.6;pointer-events:none;font-family:system-ui}
 .icard:hover .itip{display:block}
-
 .sr-box{background:#181c22;border:1px solid #1e2430;border-radius:6px;padding:8px 10px}
 .sr-ttl{font-size:6px;color:#6b7280;letter-spacing:3px;margin-bottom:6px}
 .sr-tags{display:flex;flex-wrap:wrap;gap:4px}
 .sr-tag{font-size:9px;padding:2px 8px;border-radius:3px}
 .res{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
 .sup{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.3)}
-
 .sig-row{display:grid;grid-template-columns:1fr;gap:10px}
 @media(min-width:640px){.sig-row{grid-template-columns:1.3fr 1fr}}
-
 .sig-btns{display:flex;gap:6px;margin-bottom:8px}
 #btn-sig{flex:1;background:linear-gradient(135deg,#8a6f2e,#C9A84C);color:#0a0c0f;border:none;border-radius:7px;padding:12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:1px}
 #btn-sig:disabled{background:#181c22;color:#6b7280;cursor:not-allowed}
 #btn-auto{padding:12px;background:#181c22;color:#6b7280;border:1px solid #1e2430;border-radius:7px;font-size:9px;cursor:pointer;white-space:nowrap}
 #btn-auto.on{background:rgba(34,197,94,.12);color:#22c55e;border-color:rgba(34,197,94,.3)}
-
 .sig-ph{background:#181c22;border:1px solid #1e2430;border-radius:8px;padding:24px 14px;text-align:center;color:#6b7280;font-size:11px;line-height:1.9;font-family:system-ui}
 .sig-card{background:#181c22;border:2px solid #1e2430;border-radius:8px;padding:14px}
 .sig-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
@@ -68,21 +60,17 @@ main{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
 .sig-cv{font-size:22px;font-weight:700;color:#C9A84C}
 .cbar-bg{background:#1e2430;border-radius:3px;height:4px;margin-bottom:10px}
 .cbar{height:100%;border-radius:3px;background:linear-gradient(90deg,#8a6f2e,#C9A84C);transition:width .5s}
-
 .tp-row{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px}
 .tp-c{background:#0a0c0f;border-radius:5px;padding:6px 7px}
 .tp-l{font-size:6px;color:#6b7280;letter-spacing:1px;margin-bottom:2px}
 .tp-v{font-size:10px;font-weight:700}
-
 .rbox{background:#0a0c0f;border-left:2px solid #C9A84C;border-radius:0 5px 5px 0;padding:8px 10px;margin-bottom:6px}
 .abox{background:#0a0c0f;border-radius:5px;padding:8px 10px;margin-bottom:6px}
 .rkbox{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:5px;padding:6px 10px;margin-bottom:8px}
 .blbl{font-size:6px;letter-spacing:2px;margin-bottom:3px}
 .btxt{font-size:11px;color:#e8e0d0;line-height:1.6;font-family:system-ui}
-
 .bdgs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
 .bdg{font-size:8px;padding:2px 8px;border-radius:20px}
-
 .cfs{margin-top:6px}
 .cfl{font-size:6px;color:#6b7280;letter-spacing:2px;margin-bottom:5px}
 .cftags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px}
@@ -90,7 +78,6 @@ main{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
 .bull{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.3)}
 .bear{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
 .cfsc{display:flex;gap:10px;font-size:9px}
-
 .log-box{background:#181c22;border:1px solid #1e2430;border-radius:8px;padding:12px}
 .log-ttl{font-size:7px;color:#6b7280;letter-spacing:3px;margin-bottom:8px}
 .log-list{display:flex;flex-direction:column;gap:4px;max-height:280px;overflow-y:auto}
@@ -101,7 +88,6 @@ main{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
 .log-lvl{font-size:8px;color:#6b7280;margin-top:2px}
 .log-t{font-size:7px;color:#6b7280;margin-top:1px}
 .log-empty{font-size:11px;color:#6b7280;text-align:center;padding:16px;font-family:system-ui}
-
 .guide{background:#181c22;border:1px solid #1e2430;border-radius:8px;padding:12px}
 .guide-ttl{font-size:7px;color:#C9A84C;letter-spacing:3px;margin-bottom:8px}
 .guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
@@ -120,7 +106,7 @@ main{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
 </div>
 
 <header>
-  <div><div class="logo">AURUM SIGNAL</div><div class="sub">XAU/USD · BINANCE LIVE · AI POWERED</div></div>
+  <div><div class="logo">AURUM SIGNAL</div><div class="sub">XAU/USD · FINNHUB LIVE · AI</div></div>
   <div class="hright">
     <div class="ctx">
       <span id="h-ses" style="color:#6b7280">● –</span>
@@ -151,12 +137,12 @@ main{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
   </div>
 
   <div class="ind-grid">
-    <div class="icard"><div class="ilbl">RSI (14)</div><div class="ival" id="i-rsi" style="color:#C9A84C">–</div><div class="isub" id="i-rsi-s">–</div><div class="itip">Above 70 = overbought. Below 30 = oversold. 50 = neutral zone.</div></div>
+    <div class="icard"><div class="ilbl">RSI (14)</div><div class="ival" id="i-rsi" style="color:#C9A84C">–</div><div class="isub" id="i-rsi-s">–</div><div class="itip">Above 70 = overbought. Below 30 = oversold. 50 = neutral.</div></div>
     <div class="icard"><div class="ilbl">MACD HIST</div><div class="ival" id="i-macd" style="color:#C9A84C">–</div><div class="isub" id="i-macd-s">–</div><div class="itip">Positive = buying pressure. Negative = selling pressure.</div></div>
     <div class="icard"><div class="ilbl">MA20</div><div class="ival" id="i-ma20" style="color:#C9A84C">–</div><div class="isub" id="i-ma20-s">–</div><div class="itip">Short-term trend. Price above = bullish, below = bearish.</div></div>
-    <div class="icard"><div class="ilbl">MA50</div><div class="ival" id="i-ma50" style="color:#C9A84C">–</div><div class="isub" id="i-ma50-s">–</div><div class="itip">Medium trend. MA20 crossing MA50 = golden/death cross signal.</div></div>
-    <div class="icard"><div class="ilbl">BB WIDTH</div><div class="ival" id="i-bb" style="color:#3b82f6">–</div><div class="isub" id="i-bb-s">–</div><div class="itip">Price outside Bollinger Bands = potential reversal. Inside = normal.</div></div>
-    <div class="icard"><div class="ilbl">ADX (14)</div><div class="ival" id="i-adx" style="color:#C9A84C">–</div><div class="isub" id="i-adx-s">–</div><div class="itip">Trend strength. Above 25 = strong trend. Below 20 = ranging market.</div></div>
+    <div class="icard"><div class="ilbl">MA50</div><div class="ival" id="i-ma50" style="color:#C9A84C">–</div><div class="isub" id="i-ma50-s">–</div><div class="itip">Medium trend. MA20 crossing MA50 = golden/death cross.</div></div>
+    <div class="icard"><div class="ilbl">BB WIDTH</div><div class="ival" id="i-bb" style="color:#3b82f6">–</div><div class="isub" id="i-bb-s">–</div><div class="itip">Price outside Bollinger Bands = potential reversal.</div></div>
+    <div class="icard"><div class="ilbl">ADX (14)</div><div class="ival" id="i-adx" style="color:#C9A84C">–</div><div class="isub" id="i-adx-s">–</div><div class="itip">Trend strength. Above 25 = strong. Below 20 = ranging.</div></div>
   </div>
 
   <div class="sr-box" id="sr-box" style="display:none">
@@ -171,7 +157,7 @@ main{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
         <button id="btn-auto" onclick="toggleAuto()">AUTO OFF</button>
       </div>
       <div id="sig-area">
-        <div class="sig-ph">Hit <strong style="color:#C9A84C">◈ GET AI SIGNAL</strong><br/>Claude AI analyzes all indicators<br/>→ BUY / SELL / WAIT + full reasoning</div>
+        <div class="sig-ph">Hit <strong style="color:#C9A84C">◈ GET AI SIGNAL</strong><br/>Claude AI analyzes all indicators<br/>→ BUY / SELL / WAIT + analysis</div>
       </div>
     </div>
     <div class="log-box">
@@ -183,12 +169,12 @@ main{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
   <div class="guide">
     <div class="guide-ttl">◈ HOW TO USE</div>
     <div class="guide-grid">
-      <div class="gi"><div class="gi-t">1. LIVE BINANCE</div><div class="gi-d">Real XAUUSD 1-minute candles from Binance. Updated every minute.</div></div>
-      <div class="gi"><div class="gi-t">2. AI SIGNAL</div><div class="gi-d">Claude AI reads all 6 indicators → BUY/SELL/WAIT with plain-English reasoning.</div></div>
-      <div class="gi"><div class="gi-t">3. ENTRY/SL/TP</div><div class="gi-d">Entry = open here. SL = stop loss. TP = take profit. R:R = reward vs risk.</div></div>
-      <div class="gi"><div class="gi-t">4. RSI</div><div class="gi-d">Below 30 = oversold (buy signal). Above 70 = overbought (sell signal).</div></div>
-      <div class="gi"><div class="gi-t">5. SESSION</div><div class="gi-d">London + NY overlap (13–16 UTC) = highest Gold volume = strongest signals.</div></div>
-      <div class="gi"><div class="gi-t">6. AUTO</div><div class="gi-d">AUTO ON = fresh AI signal every 30 seconds automatically.</div></div>
+      <div class="gi"><div class="gi-t">1. LIVE FINNHUB</div><div class="gi-d">Real XAUUSD from Finnhub WebSocket. True real-time data.</div></div>
+      <div class="gi"><div class="gi-t">2. AI SIGNAL</div><div class="gi-d">Claude AI reads indicators → BUY/SELL/WAIT with analysis.</div></div>
+      <div class="gi"><div class="gi-t">3. ENTRY/SL/TP</div><div class="gi-d">Entry, Stop Loss, Take Profit, and Risk:Reward ratio.</div></div>
+      <div class="gi"><div class="gi-t">4. RSI</div><div class="gi-d">Below 30 = oversold (buy). Above 70 = overbought (sell).</div></div>
+      <div class="gi"><div class="gi-t">5. SESSION</div><div class="gi-d">London/NY overlap = highest volume = strongest signals.</div></div>
+      <div class="gi"><div class="gi-t">6. AUTO</div><div class="gi-d">AUTO ON = fresh AI signal every 30 seconds.</div></div>
     </div>
   </div>
 </main>
@@ -214,16 +200,20 @@ function scoreConf(ind){const{r,mh,ma20,ma50,ma200,close,bv,at,ad}=ind;let bull=
 async function pollCandles(){
   try{
     const res = await fetch(SERVER + '/candles');
-    if(!res.ok) throw new Error('Server error ' + res.status);
+    if(!res.ok) throw new Error('Server ' + res.status);
     const d = await res.json();
-    candles = d.candles;
-    updateCharts();
-    updateUI();
-    document.getElementById('live-dot').textContent = '● LIVE';
-    document.getElementById('live-dot').style.color = '#22c55e';
+    if(d.candles && d.candles.length > 0){
+      candles = d.candles;
+      updateCharts();
+      updateUI();
+      document.getElementById('live-dot').textContent = '● LIVE';
+      document.getElementById('live-dot').style.color = '#22c55e';
+    }else{
+      throw new Error('No candles');
+    }
   }catch(e){
     console.warn('Poll error:', e.message);
-    document.getElementById('live-dot').textContent = '● STALE';
+    document.getElementById('live-dot').textContent = '● LOADING';
     document.getElementById('live-dot').style.color = '#C9A84C';
   }
 }
@@ -261,4 +251,74 @@ function updateUI(){
   if(candles.length<5)return;
   const last=candles[candles.length-1],prev=candles[candles.length-2]||last,cl=candles.map(c=>c.close);
   const m20=ema(cl,20),m50=ema(cl,50),m200=ema(cl,200),rsA=calcRSI(cl,14),mcd=calcMACD(cl),bba=calcBB(cl,20),atrA=calcATR(candles,14),adxA=calcADX(candles,14);
-  const lR=rsA[rsA.length-1]||50,lM=mcd.hist[mcd.hist.length-1]||0,l
+  const lR=rsA[rsA.length-1]||50,lM=mcd.hist[mcd.hist.length-1]||0,lBB=bba[bba.length-1]||{},lAT=atrA[atrA.length-1]||5,lAD=adxA[adxA.length-1]||20;
+  const lMA20=m20[m20.length-1]||last.close,lMA50=m50[m50.length-1]||last.close,lMA200=m200[m200.length-1]||last.close;
+  const ch=+(last.close-prev.close).toFixed(2),ses=getSession();
+  const vol=lAT>8?'HIGH':lAT>3?'NORMAL':'LOW',vc=lAT>8?'#ef4444':lAT>3?'#C9A84C':'#22c55e';
+  document.getElementById('live-price').textContent=last.close.toFixed(2);document.getElementById('live-price').style.color=ch>=0?'#22c55e':'#ef4444';
+  document.getElementById('live-change').textContent=(ch>=0?'▲ ':'▼ ')+Math.abs(ch).toFixed(2);document.getElementById('live-change').style.color=ch>=0?'#22c55e':'#ef4444';
+  document.getElementById('h-ses').textContent='● '+ses.n;document.getElementById('h-ses').style.color=ses.c;
+  document.getElementById('h-vol').textContent='VOL:'+vol+' ('+lAT+')';document.getElementById('h-vol').style.color=vc;
+  document.getElementById('h-trend').textContent=(lAD>25?'TRENDING':'RANGING')+' '+lAD;
+  const rc2=lR>70?'#ef4444':lR<30?'#22c55e':'#C9A84C';
+  document.getElementById('i-rsi').textContent=lR.toFixed(1);document.getElementById('i-rsi').style.color=rc2;document.getElementById('i-rsi-s').textContent=lR>70?'Overbought':lR<30?'Oversold':'Neutral';document.getElementById('rsi-now').textContent=lR.toFixed(1);
+  document.getElementById('i-macd').textContent=lM.toFixed(3);document.getElementById('i-macd').style.color=lM>0?'#22c55e':'#ef4444';document.getElementById('i-macd-s').textContent=lM>0?'Bullish momentum':'Bearish momentum';
+  document.getElementById('i-ma20').textContent=lMA20.toFixed(2);document.getElementById('i-ma20').style.color=last.close>lMA20?'#22c55e':'#ef4444';document.getElementById('i-ma20-s').textContent=last.close>lMA20?'Price above ↑':'Price below ↓';
+  document.getElementById('i-ma50').textContent=lMA50.toFixed(2);document.getElementById('i-ma50').style.color=last.close>lMA50?'#22c55e':'#ef4444';document.getElementById('i-ma50-s').textContent=last.close>lMA50?'Price above ↑':'Price below ↓';
+  document.getElementById('i-bb').textContent=lBB.u?(lBB.u-lBB.l).toFixed(2):'–';document.getElementById('i-bb-s').textContent=lBB.u&&last.close>lBB.u?'Above upper':lBB.l&&last.close<lBB.l?'Below lower':'Inside bands';
+  document.getElementById('i-adx').textContent=lAD.toFixed(1);document.getElementById('i-adx').style.color=lAD>25?'#C9A84C':'#6b7280';document.getElementById('i-adx-s').textContent=lAD>25?'Strong trend':'Weak / ranging';
+  const lvl=calcSR(candles,10);if(lvl.length){document.getElementById('sr-box').style.display='block';document.getElementById('sr-tags').innerHTML=lvl.map(l=>`<span class="sr-tag ${l.t==='R'?'res':'sup'}">${l.t}: ${l.p.toFixed(2)}</span>`).join('');}
+  window._ind={r:lR,mh:lM,ma20:lMA20,ma50:lMA50,ma200:lMA200,bv:lBB,at:lAT,ad:lAD,close:last.close,ses:ses.n};
+}
+
+// ── AI SIGNAL ─────────────────────────────────────────────────────────────────
+async function getSignal(){
+  const ind=window._ind;if(!ind)return;
+  const btn=document.getElementById('btn-sig');btn.disabled=true;btn.textContent='◈ ANALYZING...';
+  const cf=scoreConf(ind);
+  const prompt=`You are an elite XAUUSD Gold trading analyst. Analyze this REAL Finnhub market snapshot NOW.
+Price: $${ind.close} | RSI(14): ${ind.r} | MACD Hist: ${ind.mh}
+MA20: ${ind.ma20} | MA50: ${ind.ma50} | MA200: ${ind.ma200}
+BB Upper: ${ind.bv.u} Mid: ${ind.bv.mid} Lower: ${ind.bv.l}
+ATR(14): ${ind.at} | ADX(14): ${ind.ad} | Session: ${ind.ses}
+Bull score: ${cf.bull} | Bear score: ${cf.bear}
+Signals: ${cf.sigs.map(s=>s.l).join(', ')}
+Respond ONLY with valid JSON no markdown:
+{"signal":"BUY or SELL or WAIT","confidence":0-100,"entry":number,"sl":number,"tp":number,"rr":number,"primary_reason":"one sentence","analysis":"2-3 sentences","risks":"one sentence","trend_bias":"BULLISH or BEARISH or NEUTRAL","market_condition":"TRENDING or RANGING or VOLATILE"}`;
+  try{
+    const res=await fetch(SERVER+'/signal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:800,messages:[{role:'user',content:prompt}]})});
+    if(!res.ok)throw new Error('Server '+res.status);
+    const data=await res.json();
+    const text=data.content?.map(b=>b.text||'').join('')||'';
+    if(!text)throw new Error('Empty response');
+    const result=JSON.parse(text.replace(/```json|```/g,'').trim());
+    renderSignal(result,cf);addToLog(result);
+  }catch(e){document.getElementById('sig-area').innerHTML=`<div class="sig-ph" style="color:#ef4444">⚠ ${e.message}</div>`;}
+  btn.disabled=false;btn.textContent='◈ GET AI SIGNAL';
+}
+
+function renderSignal(s,cf){
+  const dc=s.signal==='BUY'?'#22c55e':s.signal==='SELL'?'#ef4444':'#6b7280';
+  const bc=s.signal==='BUY'?'rgba(34,197,94,.4)':s.signal==='SELL'?'rgba(239,68,68,.4)':'#1e2430';
+  const tags=cf.sigs.map(x=>`<span class="cft ${x.b==='bull'?'bull':'bear'}">${x.l}</span>`).join('');
+  document.getElementById('sig-area').innerHTML=`<div class="sig-card" style="border-color:${bc}"><div class="sig-top"><div><div style="font-size:7px;color:#6b7280;letter-spacing:3px;margin-bottom:3px">FINNHUB REAL DATA</div><div class="sig-dir" style="color:${dc}">${s.signal}</div></div><div style="text-align:right"><div class="sig-cl">CONFIDENCE</div><div class="sig-cv">${s.confidence}%</div></div></div><div class="cbar-bg"><div class="cbar" style="width:${s.confidence}%"></div></div><div class="tp-row"><div class="tp-c"><div class="tp-l">ENTRY</div><div class="tp-v" style="color:#e8e0d0">${s.entry}</div></div><div class="tp-c"><div class="tp-l">STOP LOSS</div><div class="tp-v" style="color:#ef4444">${s.sl}</div></div><div class="tp-c"><div class="tp-l">TAKE PROFIT</div><div class="tp-v" style="color:#22c55e">${s.tp}</div></div><div class="tp-c"><div class="tp-l">R:R</div><div class="tp-v" style="color:#C9A84C">1:${s.rr}</div></div></div>${s.primary_reason?`<div class="rbox"><div class="blbl" style="color:#C9A84C">REASON</div><div class="btxt">${s.primary_reason}</div></div>`:''} ${s.analysis?`<div class="abox"><div class="blbl" style="color:#6b7280">ANALYSIS</div><div class="btxt">${s.analysis}</div></div>`:''} ${s.risks?`<div class="rkbox"><div class="blbl" style="color:#ef4444">⚠ RISK</div><div class="btxt" style="color:#6b7280">${s.risks}</div></div>`:''} ${s.trend_bias?`<div class="bdgs"><span class="bdg" style="background:rgba(201,168,76,.1);color:#C9A84C;border:1px solid #8a6f2e">${s.trend_bias}</span><span class="bdg" style="background:rgba(59,130,246,.1);color:#3b82f6;border:1px solid rgba(59,130,246,.3)">${s.market_condition}</span></div>`:''}<div class="cfs"><div class="cfl">CONFLUENCE</div><div class="cftags">${tags}</div><div class="cfsc"><span style="color:#22c55e">▲ ${cf.bull}</span><span style="color:#ef4444">▼ ${cf.bear}</span><span style="color:#6b7280">ADX ${cf.ad}</span></div></div></div>`;
+}
+
+function addToLog(s){const dc=s.signal==='BUY'?'#22c55e':s.signal==='SELL'?'#ef4444':'#6b7280';const el=document.createElement('div');el.className='log-item';el.style.borderLeft=`3px solid ${dc}`;el.innerHTML=`<div class="log-top"><span class="log-dir" style="color:${dc}">${s.signal}</span><span class="log-pct">${s.confidence}%</span></div><div class="log-lvl">@ ${s.entry} · SL ${s.sl} · TP ${s.tp}</div><div class="log-t">${new Date().toLocaleTimeString()}</div>`;const list=document.getElementById('log-list');if(list.querySelector('.log-empty'))list.innerHTML='';list.insertBefore(el,list.firstChild);}
+
+function toggleAuto(){autoMode=!autoMode;const btn=document.getElementById('btn-auto');btn.textContent=autoMode?'AUTO ON':'AUTO OFF';btn.classList.toggle('on',autoMode);if(autoMode)autoTimer=setInterval(getSignal,30000);else clearInterval(autoTimer);}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+async function boot(){
+  document.getElementById('splash-msg').textContent='LOADING CHART...';
+  await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js';s.onload=res;s.onerror=rej;document.head.appendChild(s);});
+  document.getElementById('splash-msg').textContent='FETCHING FINNHUB DATA...';
+  await pollCandles();
+  initCharts();
+  document.getElementById('splash').style.display='none';
+  setInterval(pollCandles, POLL_MS);
+}
+window.addEventListener('load',boot);
+</script>
+</body>
+</html>
