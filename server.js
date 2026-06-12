@@ -104,6 +104,21 @@ function connectFinnhub() {
 }
 
 // ── Routes ────────────────────────────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.send(`<!DOCTYPE html><html><head><title>Aurum Signal API</title>
+<style>body{font-family:monospace;background:#0a0c0f;color:#c9a84c;padding:40px;max-width:600px}
+h1{letter-spacing:4px;font-size:20px}p{color:#8892a4;font-size:13px}
+.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1e2535}
+.ok{color:#00c896}.label{color:#4a5568}</style></head>
+<body><h1>⬡ AURUM SIGNAL</h1><p>XAUUSD Trading Signal API</p><br>
+<div class="row"><span class="label">Status</span><span class="ok">RUNNING</span></div>
+<div class="row"><span class="label">Candles</span><span>${candles.length + (currentCandle ? 1 : 0)}</span></div>
+<div class="row"><span class="label">Last Price</span><span>${lastPrice ? '$' + lastPrice.toFixed(2) : '—'}</span></div>
+<div class="row"><span class="label">Finnhub WS</span><span class="${finnhubConnected ? 'ok' : ''}">${finnhubConnected ? 'CONNECTED' : 'RECONNECTING'}</span></div>
+<div class="row"><span class="label">Endpoints</span><span>GET /candles · POST /signal · GET /health</span></div>
+</body></html>`);
+});
+
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
