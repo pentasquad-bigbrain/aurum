@@ -1,0 +1,18 @@
+{
+  "name": "aurum-signal-backend",
+  "version": "1.0.0",
+  "description": "XAUUSD Trading Signal Backend — Finnhub WebSocket + Claude AI",
+  "main": "server.js",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0",
+    "ws": "^8.16.0"
+  }
+}
