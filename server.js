@@ -1,4 +1,3 @@
-cat > /home/claude/server-final.js << 'JSEOF'
 const express = require('express');
 const WebSocket = require('ws');
 const fetch = require('node-fetch');
@@ -188,6 +187,3 @@ process.on('SIGINT', () => {
   if (ws) ws.close();
   process.exit(0);
 });
-JSEOF
-cp /home/claude/server-final.js /mnt/user-data/outputs/server-final.js
-echo "✓ Final server created with aggressive CORS"
