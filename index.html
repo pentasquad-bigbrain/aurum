@@ -1381,12 +1381,24 @@ async function fetchCandles() {
 // ══════════════════════════════════════════════════════════════════════════════
 // SIGNAL
 // ══════════════════════════════════════════════════════════════════════════════
+function getSessionIST() {
+  // IST = UTC + 5:30
+  const now     = new Date();
+  const utcMins = now.getUTCHours() * 60 + now.getUTCMinutes();
+  const istMins = (utcMins + 330) % 1440;
+  const istH    = Math.floor(istMins / 60);
+  const istM    = istMins % 60;
+  const istTime = istH * 100 + istM;
+
+  if (istTime >= 1525 && istTime < 1730)
+    return { name: 'LONDON-NY OVERLAP', tag: 'PRIME',    trade: true,  ist: `${istH}:${String(istM).padStart(2,'0')}` };
+  if (istTime >= 1730 && istTime <= 2130)
+    return { name: 'NY SESSION',        tag: 'ACTIVE',   trade: true,  ist: `${istH}:${String(istM).padStart(2,'0')}` };
+  return       { name: 'DEAD ZONE',     tag: 'NO TRADE', trade: false, ist: `${istH}:${String(istM).padStart(2,'0')}` };
+}
+
 function getSession() {
-  const h = new Date().getUTCHours();
-  if (h >= 22 || h < 7)  return 'ASIA';
-  if (h >= 7  && h < 10) return 'LONDON OPEN';
-  if (h >= 13 && h < 17) return 'NEW YORK OPEN';
-  return 'LONDON';
+  return getSessionIST().name;
 }
 
 function buildPrompt() {
@@ -1401,15 +1413,29 @@ function buildPrompt() {
     ? `ADX:${adx.adx.toFixed(1)} +DI:${adx.plusDI.toFixed(1)} -DI:${adx.minusDI.toFixed(1)}`
     : 'ADX:N/A';
 
+  const sess = getSessionIST();
+  const sessionBlock = sess.trade
+    ? `SESSION: ${sess.name} [${sess.tag}] — IST ${sess.ist}
+This is an ACTIVE trading window. High institutional liquidity. Signals with confluence are valid.
+${sess.name === 'LONDON-NY OVERLAP' ? 'LONDON-NY OVERLAP is the PRIME window — strongest trends, tightest spreads. Prefer trending signals.' : 'NY SESSION — sustained directional moves common. Watch for reversals near session highs/lows.'}`
+    : `SESSION: ${sess.name} [${sess.tag}] — IST ${sess.ist}
+⚠ THIS IS A DEAD ZONE. Institutional desks are closed. Price action is thin, random, and manipulated.
+You MUST return signal:"WAIT" with confidence ≤ 30 regardless of indicators. Do not suggest BUY or SELL.`;
+
   return `You are an elite XAUUSD (Gold/USD) trader. Analyse this real-time market snapshot and give a precise trading signal.${buildLearningContext()}
 
 SNAPSHOT (${new Date().toISOString()}):
-Price: $${price ? price.toFixed(2) : 'N/A'} | Session: ${getSession()} | Candles: ${candles.length}
-RSI(14): ${rsi ? rsi.toFixed(2) : 'N/A'}
+Price: $${price ? price.toFixed(2) : 'N/A'} | Candles: ${candles.length}
+
+${sessionBlock}
+
+INDICATORS:
+RSI(14): ${rsi ? rsi.toFixed(2) : 'N/A'}${rsi > 70 ? ' ⚠ OVERBOUGHT' : rsi < 30 ? ' ⚠ OVERSOLD' : ''}
 ${macdStr}
 MA20: ${ma20 ? ma20.toFixed(2) : 'N/A'} | MA50: ${ma50 ? ma50.toFixed(2) : 'N/A'} | MA200: ${ma200 ? ma200.toFixed(2) : 'N/A'}
+${price && ma20 ? `Price vs MAs: ${price > ma20 ? 'ABOVE MA20' : 'BELOW MA20'} | ${price > ma50 ? 'ABOVE MA50' : 'BELOW MA50'}` : ''}
 BB(20,2): ${bbStr}
-${adxStr}
+${adxStr}${adx && adx.adx < 20 ? ' ⚠ RANGING — ADX below 20, avoid directional trades' : adx && adx.adx > 30 ? ' ✓ STRONG TREND' : ''}
 ATR(14): ${atr ? atr.toFixed(4) : 'N/A'}
 
 Respond with ONLY a JSON object — no markdown, no explanation, no code fences. Example structure:
