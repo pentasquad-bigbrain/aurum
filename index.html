@@ -29,13 +29,50 @@
   --blue:       #4a9eff;
   --purple:     #a78bfa;
   --text-1:     #f0f0f0;
-  --text-2:     #8892a4;
-  --text-3:     #4a5568;
+  --text-2:     #a0aab8;
+  --text-3:     #6b7a94;
   --font-d:     'Cormorant Garamond', Georgia, serif;
   --font-m:     'JetBrains Mono', 'Courier New', monospace;
   --radius:     6px;
   --radius-lg:  10px;
 }
+
+/* ── Light Mode ──────────────────────────────────────────────── */
+body.light {
+  --bg-deep:    #f0ede5;
+  --bg-base:    #ffffff;
+  --bg-card:    #f8f6f1;
+  --bg-raised:  #edebe3;
+  --border:     #d4cec0;
+  --border-dim: #e5e1d8;
+  --gold:       #9a6e10;
+  --gold-bright:#b8860b;
+  --gold-dim:   #d4b96a;
+  --green:      #007a5a;
+  --green-dim:  #c8f0e4;
+  --red:        #cc1f3f;
+  --red-dim:    #fce8ed;
+  --blue:       #1a6fcc;
+  --purple:     #6d4fc2;
+  --text-1:     #1a1612;
+  --text-2:     #4a4540;
+  --text-3:     #7a7268;
+  --chart-bg:   #ffffff;
+}
+
+/* Theme toggle button */
+#theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-m);
+  font-size: 13px;
+  transition: all 0.2s;
+}
+#theme-toggle:hover { border-color: var(--gold); color: var(--gold); }
 
 html, body {
   height: 100%;
@@ -790,6 +827,7 @@ html, body {
       </div>
       <div id="candle-count">0 candles</div>
       <div id="session-badge">—</div>
+      <button id="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">☀</button>
     </div>
   </header>
 
@@ -1642,10 +1680,77 @@ function toggleAuto() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
+// DARK / LIGHT THEME
+// ══════════════════════════════════════════════════════════════════════════════
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('theme-toggle').textContent = isLight ? '🌙' : '☀';
+  localStorage.setItem('aurum_theme', isLight ? 'light' : 'dark');
+  // Re-apply chart colours if chart exists
+  if (window._chart) {
+    const bg = isLight ? '#ffffff' : '#0d1017';
+    const grid = isLight ? '#e5e1d8' : '#1e2535';
+    const txt  = isLight ? '#4a4540' : '#a0aab8';
+    window._chart.applyOptions({
+      layout: { background: { color: bg }, textColor: txt },
+      grid:   { vertLines: { color: grid }, horzLines: { color: grid } }
+    });
+  }
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem('aurum_theme');
+  if (saved === 'light') {
+    document.body.classList.add('light');
+    document.getElementById('theme-toggle').textContent = '🌙';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// EA TRADE OUTCOME SYNC  (polls /trade-outcomes, auto-marks WIN/LOSS)
+// ══════════════════════════════════════════════════════════════════════════════
+async function pollTradeOutcomes() {
+  try {
+    const r = await fetch(API_URL + '/trade-outcomes');
+    if (!r.ok) return;
+    const outcomes = await r.json();
+    if (!outcomes.length) return;
+
+    let changed = false;
+    outcomes.forEach(o => {
+      // Match signal in history by generated_at timestamp
+      const idx = signalHistory.findIndex(s => {
+        if (!s.generated_at) return false;
+        // Compare just the date+time part (ignore milliseconds)
+        return s.generated_at.slice(0, 19) === o.generated_at.slice(0, 19);
+      });
+      if (idx === -1) return;
+      const sig = signalHistory[idx];
+      // Only update if not already manually marked
+      if (!sig.outcome || sig.outcome === 'skip') {
+        sig.outcome   = o.outcome.toLowerCase(); // 'win' or 'loss'
+        sig.ea_profit = o.profit;
+        sig.ea_ticket = o.ticket;
+        sig.ea_marked = true;
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      saveHistory();
+      updateDashboard();
+      renderHistory();
+      console.log('[Outcomes] EA results synced to dashboard');
+    }
+  } catch(e) { /* silent — backend may not have outcomes yet */ }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════════════════════
 function init() {
   loadHistory();
+  loadTheme();
   initChart();
   updateSession();
   setInterval(updateSession, 60000);
@@ -1657,6 +1762,10 @@ function init() {
   // Start polling
   fetchCandles();
   setInterval(fetchCandles, POLL_MS);
+
+  // Poll EA trade outcomes every 60s
+  pollTradeOutcomes();
+  setInterval(pollTradeOutcomes, 60000);
 
   // Hide loading after 8s even if no data (show error state)
   setTimeout(() => {
@@ -1793,6 +1902,7 @@ function updateDashboard() {
         <button class="oc-btn win  ${s.outcome==='win' ?'active':''}" onclick="markOutcome(${i},'win')">WIN</button>
         <button class="oc-btn loss ${s.outcome==='loss'?'active':''}" onclick="markOutcome(${i},'loss')">LOSS</button>
         <button class="oc-btn skip ${s.outcome==='skip'?'active':''}" onclick="markOutcome(${i},'skip')">—</button>
+        ${s.ea_marked ? `<span title="Auto-marked by EA · Ticket #${s.ea_ticket} · $${Number(s.ea_profit).toFixed(2)}" style="font-size:9px;letter-spacing:1px;color:var(--gold);border:1px solid var(--gold-dim);padding:1px 5px;border-radius:3px;cursor:default">EA</span>` : ''}
       </div></td>
     </tr>`;
   }).join('');

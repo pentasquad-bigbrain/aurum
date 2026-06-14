@@ -12,8 +12,9 @@ app.use(express.json({ limit: '1mb' }));
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 const GROQ_API_KEY    = process.env.GROQ_API_KEY;
 
-// ── Latest signal store (for MT5 polling) ─────────────────────────────────────
-let latestSignal = null;
+// ── Signal & outcome stores ───────────────────────────────────────────────────
+let latestSignal  = null;
+let tradeOutcomes = [];   // EA-reported WIN/LOSS outcomes, keyed by generated_at
 
 // ── Candle state ──────────────────────────────────────────────────────────────
 const BUFFER_SIZE = 200;
@@ -267,6 +268,22 @@ app.post('/signal', async (req, res) => {
 app.get('/latest-signal', (req, res) => {
   if (!latestSignal) return res.status(404).json({ error: 'No signal generated yet' });
   res.json(latestSignal);
+});
+
+// ── EA trade outcome reporting ────────────────────────────────────────────────
+app.post('/trade-outcome', (req, res) => {
+  const { generated_at, ticket, outcome, profit, signal, confidence } = req.body;
+  if (!generated_at || !outcome) return res.status(400).json({ error: 'generated_at and outcome required' });
+  const record = { generated_at, ticket, outcome, profit, signal, confidence, reported_at: new Date().toISOString() };
+  const idx = tradeOutcomes.findIndex(o => String(o.ticket) === String(ticket));
+  if (idx >= 0) tradeOutcomes[idx] = record;
+  else { tradeOutcomes.unshift(record); if (tradeOutcomes.length > 200) tradeOutcomes.pop(); }
+  console.log(`[Outcome] #${ticket} ${outcome} $${profit} | signal:${signal} ${confidence}%`);
+  res.json({ ok: true });
+});
+
+app.get('/trade-outcomes', (req, res) => {
+  res.json(tradeOutcomes);
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────
