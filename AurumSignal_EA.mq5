@@ -113,6 +113,7 @@ datetime   lastTradeCloseTime  = 0;   // when last trade closed
 int        tradesThisHour      = 0;   // counter reset every hour
 datetime   lastHourReset       = 0;   // timestamp of last hourly reset
 datetime   pauseUntil          = 0;   // consecutive loss pause ends at
+bool       equityGuardBypassed = false; // set by FORCE RESUME so equity guard doesn't re-halt instantly
 
 //── Win/Loss Tracker ─────────────────────────────────────────────────
 int    statTotal       = 0;
@@ -167,9 +168,10 @@ void OnTick() {
    MqlDateTime dt; TimeToStruct(TimeCurrent(), dt);
    datetime today = StringToTime(StringFormat("%04d.%02d.%02d", dt.year, dt.mon, dt.day));
    if (today != lastDay) {
-      dayOpenEquity  = AccountInfoDouble(ACCOUNT_EQUITY);
-      tradingHalted  = false;
-      lastDay        = today;
+      dayOpenEquity        = AccountInfoDouble(ACCOUNT_EQUITY);
+      tradingHalted        = false;
+      equityGuardBypassed  = false;
+      lastDay              = today;
       // Log yesterday's daily summary before resetting
       if (statTodayTrades > 0)
          LogDailySummary();
@@ -249,10 +251,11 @@ void OnChartEvent(const int id, const long& lparam, const double& dparam, const 
       ObjectSetInteger(0, sparam, OBJPROP_STATE, false);
    }
    if (sparam == PFX+"BTN_RESUME") {
-      tradingHalted = false;
-      pauseUntil    = 0;
-      lastPollTime  = 0;
-      Print("[Panel] FORCE RESUME — all halts cleared, polling immediately");
+      tradingHalted        = false;
+      equityGuardBypassed  = true;   // prevent equity guard from re-halting this session
+      pauseUntil           = 0;
+      lastPollTime         = 0;
+      Print("[Panel] FORCE RESUME — all halts cleared (equity guard bypassed until next day)");
       ObjectSetInteger(0, sparam, OBJPROP_STATE, false);
    }
    if (sparam == PFX+"BTN_RESETSTATS") {
@@ -267,8 +270,10 @@ void OnChartEvent(const int id, const long& lparam, const double& dparam, const 
 //  EQUITY PROTECTION
 //────────────────────────────────────────────────────────────────────
 bool CheckEquityProtection() {
+   // FORCE RESUME bypasses equity guard until next day reset
+   if (equityGuardBypassed) return false;
+
    double equity  = AccountInfoDouble(ACCOUNT_EQUITY);
-   double balance = AccountInfoDouble(ACCOUNT_BALANCE);
    if (equity < MinEquity) {
       if (!tradingHalted) { CloseAll("MIN EQUITY"); tradingHalted = true;
          Print("[Guard] Equity $", equity, " below floor $", MinEquity); }
@@ -280,10 +285,9 @@ bool CheckEquityProtection() {
          Print("[Guard] Daily loss ", DoubleToString(dailyDD,1), "% exceeded"); }
       return true;
    }
-   double dd = dayOpenEquity > 0 ? (dayOpenEquity - equity) / dayOpenEquity * 100.0 : 0;
-   if (dd >= MaxDrawdownPct) {
+   if (dailyDD >= MaxDrawdownPct) {
       if (!tradingHalted) { CloseAll("MAX DRAWDOWN"); tradingHalted = true;
-         Print("[Guard] Drawdown ", DoubleToString(dd,1), "% exceeded"); }
+         Print("[Guard] Drawdown ", DoubleToString(dailyDD,1), "% exceeded"); }
       return true;
    }
    return false;
@@ -1070,19 +1074,22 @@ void DeletePanel() {
 //────────────────────────────────────────────────────────────────────
 void MakeRect(string name, int x, int y, int w, int h, color bg, color border, int transp) {
    ObjectCreate(0, name, OBJ_RECTANGLE_LABEL, 0, 0, 0);
-   ObjectSetInteger(0, name, OBJPROP_XDISTANCE,  x);
-   ObjectSetInteger(0, name, OBJPROP_YDISTANCE,  y);
-   ObjectSetInteger(0, name, OBJPROP_XSIZE,      w);
-   ObjectSetInteger(0, name, OBJPROP_YSIZE,      h);
-   ObjectSetInteger(0, name, OBJPROP_BGCOLOR,    bg);
+   ObjectSetInteger(0, name, OBJPROP_CORNER,       CORNER_LEFT_UPPER);
+   ObjectSetInteger(0, name, OBJPROP_XDISTANCE,    x);
+   ObjectSetInteger(0, name, OBJPROP_YDISTANCE,    y);
+   ObjectSetInteger(0, name, OBJPROP_XSIZE,        w);
+   ObjectSetInteger(0, name, OBJPROP_YSIZE,        h);
+   ObjectSetInteger(0, name, OBJPROP_BGCOLOR,      bg);
    ObjectSetInteger(0, name, OBJPROP_BORDER_COLOR, border);
-   ObjectSetInteger(0, name, OBJPROP_BORDER_TYPE, BORDER_FLAT);
-   ObjectSetInteger(0, name, OBJPROP_BACK,       false);
-   ObjectSetInteger(0, name, OBJPROP_ZORDER,     0);
+   ObjectSetInteger(0, name, OBJPROP_BORDER_TYPE,  BORDER_FLAT);
+   ObjectSetInteger(0, name, OBJPROP_BACK,         false);
+   ObjectSetInteger(0, name, OBJPROP_SELECTABLE,   false);
+   ObjectSetInteger(0, name, OBJPROP_ZORDER,       0);
 }
 
 void MakeLabel(string name, int x, int y, string txt, int sz, color clr) {
    ObjectCreate(0, name, OBJ_LABEL, 0, 0, 0);
+   ObjectSetInteger(0, name, OBJPROP_CORNER,     CORNER_LEFT_UPPER);
    ObjectSetInteger(0, name, OBJPROP_XDISTANCE,  x);
    ObjectSetInteger(0, name, OBJPROP_YDISTANCE,  y);
    ObjectSetInteger(0, name, OBJPROP_FONTSIZE,   sz);
@@ -1090,22 +1097,25 @@ void MakeLabel(string name, int x, int y, string txt, int sz, color clr) {
    ObjectSetString(0,  name, OBJPROP_FONT,       "Consolas");
    ObjectSetString(0,  name, OBJPROP_TEXT,       txt);
    ObjectSetInteger(0, name, OBJPROP_BACK,       false);
+   ObjectSetInteger(0, name, OBJPROP_SELECTABLE, false);
    ObjectSetInteger(0, name, OBJPROP_ZORDER,     1);
 }
 
 void MakeButton(string name, int x, int y, int w, int h, string txt, color bg, color clr) {
    ObjectCreate(0, name, OBJ_BUTTON, 0, 0, 0);
-   ObjectSetInteger(0, name, OBJPROP_XDISTANCE, x);
-   ObjectSetInteger(0, name, OBJPROP_YDISTANCE, y);
-   ObjectSetInteger(0, name, OBJPROP_XSIZE,     w);
-   ObjectSetInteger(0, name, OBJPROP_YSIZE,     h);
-   ObjectSetString(0,  name, OBJPROP_TEXT,      txt);
-   ObjectSetInteger(0, name, OBJPROP_BGCOLOR,   bg);
-   ObjectSetInteger(0, name, OBJPROP_COLOR,     clr);
-   ObjectSetInteger(0, name, OBJPROP_FONTSIZE,  9);
-   ObjectSetString(0,  name, OBJPROP_FONT,      "Consolas");
-   ObjectSetInteger(0, name, OBJPROP_BACK,      false);
-   ObjectSetInteger(0, name, OBJPROP_ZORDER,    2);
+   ObjectSetInteger(0, name, OBJPROP_CORNER,     CORNER_LEFT_UPPER);
+   ObjectSetInteger(0, name, OBJPROP_XDISTANCE,  x);
+   ObjectSetInteger(0, name, OBJPROP_YDISTANCE,  y);
+   ObjectSetInteger(0, name, OBJPROP_XSIZE,      w);
+   ObjectSetInteger(0, name, OBJPROP_YSIZE,      h);
+   ObjectSetString(0,  name, OBJPROP_TEXT,       txt);
+   ObjectSetInteger(0, name, OBJPROP_BGCOLOR,    bg);
+   ObjectSetInteger(0, name, OBJPROP_COLOR,      clr);
+   ObjectSetInteger(0, name, OBJPROP_FONTSIZE,   9);
+   ObjectSetString(0,  name, OBJPROP_FONT,       "Consolas");
+   ObjectSetInteger(0, name, OBJPROP_BACK,       false);
+   ObjectSetInteger(0, name, OBJPROP_SELECTABLE, false);  // prevent drag-select, allow click events
+   ObjectSetInteger(0, name, OBJPROP_ZORDER,     10);     // high z so nothing intercepts the click
 }
 
 void LabelSet(string name, string txt, color clr) {
